@@ -16,6 +16,10 @@ app.use("/api/users", userRoutes);
 const productRoutes = require("./routes/productRoutes");
 app.use("/api/products", productRoutes);
 
+// order route
+const orderRoutes = require("./routes/orderRoutes");
+app.use("/api/orders", orderRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("API is running...");

@@ -7,6 +7,7 @@ import Dashboard from './pages/user/Dashboard';
 import ProductDetails from './pages/products/ProductDetails';
 import ProtectedRoute from './components/ProtectedRoute';
 import Cart from "./pages/cart/Cart";
+import Checkout from './pages/order/Checkout';
 
 function App() {
 
@@ -19,7 +20,7 @@ function App() {
           <Route path='/dashboard' element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/product/:id" element={<ProtectedRoute><ProductDetails /></ProtectedRoute>} />
           <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-
+          <Route path="/checkout" element={<Checkout />} />
         </Routes>
       </BrowserRouter>
     </>

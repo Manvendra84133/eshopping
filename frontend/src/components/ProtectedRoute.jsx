@@ -6,21 +6,20 @@ import Navbar from "./Navbar";
 const ProtectedRoute = ({ children }) => {
   const [isAuth, setIsAuth] = useState(null);
 
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   useEffect(() => {
     const verifyUser = async () => {
       const token = localStorage.getItem("token");
       const lastVerified = Number(localStorage.getItem("auth_verified_time"));
 
-      // ❌ no token → force verify (fail)
       if (!token) {
         setIsAuth(false);
         return;
       }
 
-      // ✅ check cached verification (31 days)
       const now = new Date().getTime();
-      const limit = 31 * 24 * 60 * 60 * 1000; // 31 days
+      const limit = 31 * 24 * 60 * 60 * 1000;
 
       if (lastVerified && now - lastVerified < limit) {
         console.log("Using cached auth ✅");
@@ -29,15 +28,13 @@ const ProtectedRoute = ({ children }) => {
       }
 
       try {
-        await axios.get("http://localhost:4009/api/users/userverify", {
+        await axios.get(`${BASE_URL}/api/users/userverify`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        // ✅ store verification time
         localStorage.setItem("auth_verified_time", now);
-
         setIsAuth(true);
 
       } catch (error) {
@@ -63,7 +60,9 @@ const ProtectedRoute = ({ children }) => {
       <Navbar user={JSON.parse(localStorage.getItem("user"))} />
       {children}
     </>
-  ) : <Navigate to="/" replace />;
+  ) : (
+    <Navigate to="/" replace />
+  );
 };
 
 export default ProtectedRoute;

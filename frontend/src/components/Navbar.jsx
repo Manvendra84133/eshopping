@@ -1,21 +1,21 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./navbar.css";
 
 function Navbar({ user }) {
   const navigate = useNavigate();
-
   const carts = useSelector((state) => state.cart.carts);
 
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("token");
 
       if (token) {
-        await axios.get("http://localhost:4009/api/users/logout", {
+        await axios.get(`${BASE_URL}/api/users/logout`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -25,7 +25,6 @@ function Navbar({ user }) {
       console.log("Logout error:", error);
     }
 
-    // ✅ Clear frontend storage
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("auth_verified_time");
@@ -47,70 +46,101 @@ function Navbar({ user }) {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
       <div className="container">
+
         {/* Logo */}
         <NavLink className="navbar-brand fw-bold" to="/dashboard">
-          <img src="https://i.postimg.cc/TP6JjSTt/logo.webp" alt="logo" style={{ width: "130px" }} />
+          <img
+            src="https://i.postimg.cc/TP6JjSTt/logo.webp"
+            alt="logo"
+            style={{ width: "130px" }}
+          />
         </NavLink>
 
-        {/* Mobile Toggle */}
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        {/* Toggle */}
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarContent"
+        >
           <span className="navbar-toggler-icon"></span>
         </button>
 
-
-
-
         {/* Navbar Content */}
         <div className="collapse navbar-collapse" id="navbarContent">
+
           {/* LEFT */}
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <NavLink className="nav-link" to="/dashboard">Products</NavLink>
+              <NavLink className="nav-link" to="/dashboard">
+                Products
+              </NavLink>
             </li>
           </ul>
 
           {/* RIGHT */}
           <div className="d-flex align-items-center gap-3">
+
             {/* CART */}
-            <div style={{ position: "relative", cursor: "pointer" }} onClick={() => navigate("/cart")}>
+            <div
+              style={{ position: "relative", cursor: "pointer" }}
+              onClick={() => navigate("/cart")}
+            >
               <i className="fa-solid fa-cart-shopping fs-5"></i>
-              {carts.length > 0 && (<span style={badgeStyle}>{carts.length}</span>)}
+
+              {carts.length > 0 && (
+                <span style={badgeStyle}>{carts.length}</span>
+              )}
             </div>
 
-            {/* USER DROPDOWN */}
+            {/* USER */}
             <div className="dropdown">
-              <img src={user?.userprofile || "/logo192.png"} alt="profile" className="rounded-circle dropdown-toggle" width="40" height="40" style={{ cursor: "pointer", objectFit: "cover" }} data-bs-toggle="dropdown" />
+              <img
+                src={user?.userprofile || "/logo192.png"}
+                alt="profile"
+                className="rounded-circle dropdown-toggle"
+                width="40"
+                height="40"
+                style={{ cursor: "pointer", objectFit: "cover" }}
+                data-bs-toggle="dropdown"
+              />
 
               <ul className="dropdown-menu dropdown-menu-end shadow-sm">
 
                 <li className="px-3 py-2">
-                  <div className="fw-semibold"> {user?.firstname} {user?.lastname} </div>
-                  <div className="small text-muted"> {user?.email} </div>
+                  <div className="fw-semibold">
+                    {user?.firstname} {user?.lastname}
+                  </div>
+                  <div className="small text-muted">
+                    {user?.email}
+                  </div>
                 </li>
 
                 <li><hr className="dropdown-divider" /></li>
 
                 <li>
                   <NavLink className="dropdown-item" to="/userprofile">
-                    <i className="fa-regular fa-user me-2"></i>Profile
+                    <i className="fa-regular fa-user me-2"></i>
+                    Profile
                   </NavLink>
                 </li>
 
                 <li>
-                  <button className="dropdown-item text-danger" onClick={handleLogout}>
+                  <button
+                    className="dropdown-item text-danger"
+                    onClick={handleLogout}
+                  >
                     <i className="fa-solid fa-right-from-bracket me-2"></i>
                     Logout
                   </button>
                 </li>
 
               </ul>
-
             </div>
 
           </div>
+
         </div>
-
-
       </div>
     </nav>
   );

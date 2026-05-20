@@ -3,12 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-import {
-  addToCart,
-  decrementQty,
-  removeFromCart,
-  clearCart
-} from "../../redux/slices/cartSlice";
+import { addToCart, decrementQty, removeFromCart, clearCart } from "../../redux/slices/cartSlice";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -24,16 +19,6 @@ const Checkout = () => {
     phone: ""
   });
 
-  const total = carts.reduce(
-    (sum, item) => sum + item.price * item.qty,
-    0
-  );
-
-  const totalQty = carts.reduce(
-    (sum, item) => sum + item.qty,
-    0
-  );
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -41,375 +26,176 @@ const Checkout = () => {
     });
   };
 
+  const total = carts.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const totalQty = carts.reduce((sum, item) => sum + item.qty, 0);
+
   const handlePlaceOrder = async () => {
     try {
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      if (!user?._id) {
+        alert("User not found. Please login again.");
+        return;
+      }
+
+      // ✅ FIXED MAPPING (MOST IMPORTANT PART)
+      const orderItems = carts.map((item) => ({
+        productId: item.id,
+        title: item.title,
+        image: item.image,
+        price: item.price,
+        quantity: item.qty
+      }));
+
+      const payload = {
+        userId: user._id,
+        orderItems,
+        shippingAddress: formData,
+        totalPrice: total
+      };
+
+      console.log("ORDER PAYLOAD:", payload);
 
       await axios.post(
         "https://eshopping-8qww.onrender.com/api/orders/createorder",
-        {
-          orderItems: carts,
-          shippingAddress: formData,
-          totalPrice: total
-        }
+        payload
       );
 
       alert("Order placed successfully!");
 
       dispatch(clearCart());
       navigate("/");
-
     } catch (error) {
-      console.log(error);
+      console.log("ORDER ERROR:", error.response?.data || error.message);
       alert("Order failed");
     }
   };
 
   if (carts.length === 0) {
     return (
-      <div
-        className="d-flex flex-column justify-content-center align-items-center"
-        style={{ height: "70vh" }}
-      >
-
-        <div className="text-center">
-
-          <div
-            className="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
-            style={{
-              width: "90px",
-              height: "90px",
-              fontSize: "35px"
-            }}
-          >
-            🛒
-          </div>
-
-          <h3 className="fw-bold">
-            Your cart is empty
-          </h3>
-
-          <p className="text-muted mb-4">
-            Add products to continue shopping
-          </p>
-
-          <button
-            className="btn btn-dark px-4 rounded-pill"
-            onClick={() => navigate("/")}
-          >
-            Continue Shopping
-          </button>
-
-        </div>
-
+      <div className="container text-center mt-5">
+        <h3>Your cart is empty 🛒</h3>
+        <button className="btn btn-primary mt-3" onClick={() => navigate("/")}>
+          Go Shopping
+        </button>
       </div>
     );
   }
 
   return (
-    <div
-      className="container-fluid py-2 px-lg-4"
-      style={{ background: "#f5f7fb" }}
-    >
-
-      {/* TOP */}
-      <div className="mb-3">
-
-        <h2
-          className="fw-bold mb-1"
-          style={{ color: "#1e293b" }}
-        >
-          Checkout
-        </h2>
-
-        <p className="text-muted mb-0">
-          Complete your purchase
-        </p>
-
-      </div>
+    <div className="container-fluid py-3 px-lg-4" style={{ background: "#f5f7fb" }}>
+      <h2 className="fw-bold mb-3">Checkout</h2>
 
       <div className="row g-3">
 
-        {/* LEFT SIDE */}
+        {/* LEFT SIDE - CART ITEMS */}
         <div className="col-lg-8">
 
           {carts.map((item) => (
             <div
               key={item.id}
-              className="card border-0 mb-3"
-              style={{
-                borderRadius: "16px",
-                boxShadow: "0 4px 18px rgba(0,0,0,0.05)"
-              }}
+              className="card border-0 mb-2 shadow-sm"
+              style={{ borderRadius: "14px" }}
             >
+              <div className="card-body p-2">
 
-              <div className="card-body p-3">
-
-                <div className="row align-items-center">
+                <div className="row align-items-center g-2">
 
                   {/* IMAGE */}
-                  <div className="col-md-2 text-center mb-3 mb-md-0">
-
-                    <div
-                      className="bg-light d-flex align-items-center justify-content-center mx-auto"
+                  <div className="col-2 text-center">
+                    <img
+                      src={item.image}
+                      alt=""
                       style={{
-                        width: "90px",
-                        height: "90px",
-                        borderRadius: "14px"
+                        width: "70px",
+                        height: "70px",
+                        objectFit: "contain"
                       }}
-                    >
-
-                      <img
-                        src={item.image}
-                        alt=""
-                        style={{
-                          width: "65px",
-                          height: "65px",
-                          objectFit: "contain"
-                        }}
-                      />
-
-                    </div>
-
+                    />
                   </div>
 
                   {/* DETAILS */}
-                  <div className="col-md-6">
+                  <div className="col-6">
+                    <h6 className="mb-1">{item.title}</h6>
+                    <small className="text-muted">${item.price}</small>
 
-                    <h6
-                      className="fw-bold mb-1"
-                      style={{
-                        color: "#1e293b"
-                      }}
-                    >
-                      {item.title}
-                    </h6>
-
-                    <p
-                      className="mb-2 fw-semibold"
-                      style={{
-                        color: "#64748b"
-                      }}
-                    >
-                      ${item.price}
-                    </p>
-
-                    {/* QTY */}
-                    <div
-                      className="d-inline-flex align-items-center px-2 py-1"
-                      style={{
-                        background: "#f8fafc",
-                        borderRadius: "10px",
-                        border: "1px solid #e2e8f0"
-                      }}
-                    >
+                    <div className="d-flex align-items-center gap-2 mt-2">
 
                       <button
-                        className="btn btn-sm"
-                        style={{
-                          width: "30px",
-                          height: "30px",
-                          background: "#fff",
-                          border: "1px solid #e2e8f0",
-                          borderRadius: "8px",
-                          fontWeight: "bold"
-                        }}
+                        className="btn btn-sm btn-outline-secondary"
                         onClick={() => dispatch(decrementQty(item))}
                       >
                         -
                       </button>
 
-                      <span className="fw-bold mx-3">
-                        {item.qty}
-                      </span>
+                      <span>{item.qty}</span>
 
                       <button
-                        className="btn btn-sm"
-                        style={{
-                          width: "30px",
-                          height: "30px",
-                          background: "#0f172a",
-                          color: "#fff",
-                          borderRadius: "8px"
-                        }}
+                        className="btn btn-sm btn-dark"
                         onClick={() => dispatch(addToCart(item))}
                       >
                         +
                       </button>
 
                     </div>
-
                   </div>
 
-                  {/* PRICE */}
-                  <div className="col-md-4 text-md-end mt-3 mt-md-0">
-
-                    <h5
-                      className="fw-bold mb-2"
-                      style={{ color: "#0f172a" }}
-                    >
+                  {/* PRICE + REMOVE */}
+                  <div className="col-4 text-end">
+                    <h6>
                       ${(item.price * item.qty).toFixed(2)}
-                    </h5>
+                    </h6>
 
                     <button
-                      className="btn btn-outline-danger btn-sm px-3 rounded-pill"
+                      className="btn btn-sm btn-outline-danger"
                       onClick={() => dispatch(removeFromCart(item.id))}
                     >
                       Remove
                     </button>
-
                   </div>
 
                 </div>
 
               </div>
-
             </div>
           ))}
 
         </div>
 
-        {/* RIGHT SIDE */}
+        {/* RIGHT SIDE - SUMMARY */}
         <div className="col-lg-4">
 
-          <div
-            className="card border-0"
-            style={{
-              borderRadius: "18px",
-              boxShadow: "0 4px 18px rgba(0,0,0,0.05)",
-              position: "sticky",
-              top: "15px"
-            }}
-          >
+          <div className="card shadow-sm border-0 p-3" style={{ position: "sticky", top: "15px" }}>
 
-            <div className="card-body p-3">
+            <h5>Order Summary</h5>
 
-              <h5
-                className="fw-bold mb-3"
-                style={{ color: "#1e293b" }}
-              >
-                Order Summary
-              </h5>
-
-              <div className="d-flex justify-content-between mb-2">
-
-                <span className="text-muted">
-                  Total Items
-                </span>
-
-                <span className="fw-semibold">
-                  {totalQty}
-                </span>
-
-              </div>
-
-              <div className="d-flex justify-content-between mb-3">
-
-                <span className="text-muted">
-                  Total Amount
-                </span>
-
-                <span
-                  className="fw-bold"
-                  style={{
-                    color: "#16a34a",
-                    fontSize: "20px"
-                  }}
-                >
-                  ${total.toFixed(2)}
-                </span>
-
-              </div>
-
-              <hr />
-
-              {/* FORM */}
-              <input
-                className="form-control mb-2"
-                name="fullName"
-                placeholder="Full Name"
-                onChange={handleChange}
-                style={{
-                  borderRadius: "10px",
-                  border: "1px solid #dbe2ea"
-                }}
-              />
-
-              <input
-                className="form-control mb-2"
-                name="address"
-                placeholder="Address"
-                onChange={handleChange}
-                style={{
-                  borderRadius: "10px",
-                  border: "1px solid #dbe2ea"
-                }}
-              />
-
-              <div className="row">
-
-                <div className="col-6">
-
-                  <input
-                    className="form-control mb-2"
-                    name="city"
-                    placeholder="City"
-                    onChange={handleChange}
-                    style={{
-                      borderRadius: "10px",
-                      border: "1px solid #dbe2ea"
-                    }}
-                  />
-
-                </div>
-
-                <div className="col-6">
-
-                  <input
-                    className="form-control mb-2"
-                    name="pincode"
-                    placeholder="Pincode"
-                    onChange={handleChange}
-                    style={{
-                      borderRadius: "10px",
-                      border: "1px solid #dbe2ea"
-                    }}
-                  />
-
-                </div>
-
-              </div>
-
-              <input
-                className="form-control mb-3"
-                name="phone"
-                placeholder="Phone Number"
-                onChange={handleChange}
-                style={{
-                  borderRadius: "10px",
-                  border: "1px solid #dbe2ea"
-                }}
-              />
-
-              <button
-                className="btn w-100 fw-bold py-2"
-                onClick={handlePlaceOrder}
-                style={{
-                  background: "#0f172a",
-                  color: "#fff",
-                  borderRadius: "12px"
-                }}
-              >
-                Place Order
-              </button>
-
+            <div className="d-flex justify-content-between">
+              <span>Total Items</span>
+              <strong>{totalQty}</strong>
             </div>
+
+            <div className="d-flex justify-content-between mb-2">
+              <span>Total Price</span>
+              <strong className="text-success">${total.toFixed(2)}</strong>
+            </div>
+
+            <hr />
+
+            <input className="form-control mb-2" name="fullName" placeholder="Full Name" onChange={handleChange} />
+            <input className="form-control mb-2" name="address" placeholder="Address" onChange={handleChange} />
+            <input className="form-control mb-2" name="city" placeholder="City" onChange={handleChange} />
+            <input className="form-control mb-2" name="pincode" placeholder="Pincode" onChange={handleChange} />
+            <input className="form-control mb-3" name="phone" placeholder="Phone" onChange={handleChange} />
+
+            <button className="btn btn-success w-100" onClick={handlePlaceOrder}>
+              Place Order
+            </button>
 
           </div>
 
         </div>
 
       </div>
-
     </div>
   );
 };

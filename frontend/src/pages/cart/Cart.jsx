@@ -17,44 +17,37 @@ import { useNavigate } from 'react-router-dom';
 const Cart = () => {
 
   const dispatch = useDispatch();
-
   const navigate = useNavigate();
 
   const { carts } = useSelector((state) => state.cart);
 
   const [totalPrice, setTotalPrice] = useState(0);
-
   const [totalQty, setTotalQty] = useState(0);
 
-  // ➕ Increment
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
+
   const handleIncrement = (item) => {
     dispatch(addToCart(item));
     toast.success('Item added');
   };
 
-  // ➖ Decrement
   const handleDecrement = (item) => {
     dispatch(decrementQty(item));
     toast.error('Item removed');
   };
 
-  // ❌ Remove Item
   const handleRemove = (item) => {
     dispatch(removeFromCart(item.id));
     toast.error('Item deleted');
   };
 
-  // 🗑️ Clear Cart
   const handleClearCart = () => {
     dispatch(clearCart());
     toast.error('Cart cleared');
   };
 
-  // 🧮 Total Calculation
   useEffect(() => {
-
     let price = 0;
-
     let qty = 0;
 
     carts.forEach((item) => {
@@ -63,9 +56,7 @@ const Cart = () => {
     });
 
     setTotalPrice(price);
-
     setTotalQty(qty);
-
   }, [carts]);
 
   return (
@@ -76,7 +67,6 @@ const Cart = () => {
 
         <div className="card">
 
-          {/* HEADER */}
           <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
 
             <h5 className="m-0">
@@ -95,17 +85,13 @@ const Cart = () => {
 
           </div>
 
-          {/* BODY */}
           <div className="card-body p-0">
 
             {carts.length === 0 ? (
 
               <div className="text-center p-5">
-
                 <i className="fa fa-shopping-cart fa-2x text-muted mb-3"></i>
-
                 <p>Your cart is empty</p>
-
               </div>
 
             ) : (
@@ -113,7 +99,6 @@ const Cart = () => {
               <table className="table table-bordered mb-0 text-center align-middle">
 
                 <thead className="table-light">
-
                   <tr>
                     <th>Action</th>
                     <th>Image</th>
@@ -122,16 +107,13 @@ const Cart = () => {
                     <th>Qty</th>
                     <th>Total</th>
                   </tr>
-
                 </thead>
 
                 <tbody>
 
                   {carts.map((item) => (
-
                     <tr key={item.id}>
 
-                      {/* DELETE */}
                       <td>
                         <button
                           className="btn btn-sm btn-danger"
@@ -141,9 +123,7 @@ const Cart = () => {
                         </button>
                       </td>
 
-                      {/* IMAGE */}
                       <td>
-
                         <img
                           src={item.image}
                           alt=""
@@ -153,18 +133,12 @@ const Cart = () => {
                             objectFit: "contain"
                           }}
                         />
-
                       </td>
 
-                      {/* TITLE */}
                       <td>{item.title}</td>
-
-                      {/* PRICE */}
                       <td>${item.price}</td>
 
-                      {/* QTY */}
                       <td>
-
                         <div className="d-flex justify-content-center align-items-center">
 
                           <button
@@ -190,40 +164,30 @@ const Cart = () => {
                           </button>
 
                         </div>
-
                       </td>
 
-                      {/* TOTAL */}
                       <td>
                         ${(item.price * item.qty).toFixed(2)}
                       </td>
 
                     </tr>
-
                   ))}
 
                 </tbody>
 
-                {/* FOOTER */}
                 <tfoot>
 
                   <tr>
-
                     <td colSpan="3"></td>
-
                     <td colSpan="1">
                       <strong>Total Items:</strong> {totalQty}
                     </td>
-
                     <td colSpan="2">
                       <strong>Total Price:</strong> ${totalPrice.toFixed(2)}
                     </td>
-
                   </tr>
 
-                  {/* CHECKOUT BUTTON */}
                   <tr>
-
                     <td colSpan="6" className="text-end p-3">
 
                       <button
@@ -234,7 +198,6 @@ const Cart = () => {
                       </button>
 
                     </td>
-
                   </tr>
 
                 </tfoot>

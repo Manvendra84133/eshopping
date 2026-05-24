@@ -1,29 +1,32 @@
 const multer = require("multer");
 
-// storage config
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
-    callback(null, "./adminuploads")
+    callback(null, "./adminuploads");
   },
   filename: (req, file, callback) => {
     const filename = `image-${Date.now()}-${file.originalname}`;
-    callback(null, filename)
+    callback(null, filename);
   }
 });
 
-// filter
-const filefilter = (req, file, callback) => {
-  if (file.mimetype === "image/png" || file.mimetype === "image/jpg" || file.mimetype === "image/jpeg") {
-    callback(null, true)
+
+// FILE FILTER
+const fileFilter = (req, file, callback) => {
+  const allowedTypes = ["image/png", "image/jpg", "image/jpeg"];
+
+  if (allowedTypes.includes(file.mimetype)) {
+    callback(null, true);
   } else {
-    callback(null, false)
-    return callback(new Error("Only png, jpg,jpeg formatted Allow"))
+    callback(new Error("Only PNG, JPG, JPEG files are allowed"));
   }
-}
+};
 
-const adminupload = multer({
+
+// MULTER CONFIG
+const upload = multer({
   storage: storage,
-  fileFilter: filefilter
+  fileFilter: fileFilter
 });
 
-module.exports = adminupload;
+module.exports = upload;

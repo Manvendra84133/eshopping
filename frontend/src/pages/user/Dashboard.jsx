@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Dashboard.css";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../../helper";
+
 
 function Dashboard() {
   const [user, setUser] = useState(null);
@@ -9,7 +11,6 @@ function Dashboard() {
 
   const navigate = useNavigate();
 
-  const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   // get user
   useEffect(() => {
@@ -18,74 +19,68 @@ function Dashboard() {
   }, []);
 
   // fetch products
+
   useEffect(() => {
     const storedProducts = JSON.parse(localStorage.getItem("products"));
-
     if (storedProducts?.length > 0) {
       setProducts(storedProducts);
-    } else {
-      axios
-        .get(`${BASE_URL}/api/products/getallproducts`)
+    }
+    else {
+      axios.get(`${BASE_URL}/api/products/getallproducts`)
         .then((res) => {
           setProducts(res.data);
           localStorage.setItem("products", JSON.stringify(res.data));
         })
-        .catch((err) => console.log(err));
+        .catch((err) => console.log(err))
     }
+
   }, []);
 
+
+  // Product Click
   const handleProductClick = (id) => {
     navigate(`/product/${id}`);
   };
 
+
+
+
   return (
-    <div className="container mt-4">
+    <>
+      <div className="container mt-4">
 
-      {/* USER INFO */}
-      {user && (
-        <div className="card p-3 mb-4 shadow">
-          <div className="d-flex align-items-center">
-            <img
-              src={user.userprofile}
-              alt=""
-              style={{ width: "70px", borderRadius: "50%" }}
-            />
-            <div className="ms-3">
-              <h5>
-                {user.firstname} {user.lastname}
-              </h5>
-              <p>{user.email}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* PRODUCTS */}
-      <div className="row mt-4">
-        {products.map((product) => (
-          <div className="col-md-3 mb-3" key={product.id}>
-            <div
-              className="card mb-4 shadow"
-              onClick={() => handleProductClick(product.id)}
-            >
-              <img
-                src={product.image}
-                className="card-img-top"
-                height="200"
-              />
-              <div className="card-body">
-                <h6>{product.title.slice(0, 40)}</h6>
-                <h5>${product.price}</h5>
-                <p className="card-text text-muted">
-                  {product.description.slice(0, 80)}...
-                </p>
+        {/* USER INFO */}
+        {user && (
+          <div className="card p-3 mb-4 shadow">
+            <div className="d-flex align-items-center">
+              <img src={user.userprofile} alt={user.name} style={{ width: "70px", borderRadius: "50%" }} />
+              <div className="ms-3">
+                <h5>{user.firstname} {user.lastname}</h5>
+                <p>{user.email}</p>
               </div>
             </div>
           </div>
-        ))}
-      </div>
+        )}
 
-    </div>
+        {/* PRODUCTS */}
+        <div className="row mt-4">
+          {products.map((product) => (
+            <div className="col-md-3 mb-3" key={product.id}>
+              <div className="card mb-4 shadow" onClick={() => handleProductClick(product.id)}>
+                <img src={product.image} className="card-img-top" height="200" alt={product.title} />
+                <div className="card-body">
+                  <h6>{product.title.slice(0, 40)}</h6>
+                  <h5>${product.price}</h5>
+                  <p className="card-text" style={{ color: 'grey' }}>{product.description.slice(0, 80)}...</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+
+      </div>
+    </>
   );
 }
 

@@ -56,12 +56,12 @@ const userSchema = new mongoose.Schema({
 userSchema.pre("save", async function () {
   try {
     if (this.isModified("password")) {
-      console.log("Before hash:", this.password);
+      // console.log("Before hash:", this.password);
       this.password = await bcrypt.hash(this.password, 12);
-      console.log("After hash:", this.password);
+      // console.log("After hash:", this.password);
     }
   } catch (error) {
-    console.log("error in pre method password hashing", error);
+    // console.log("error in pre method password hashing", error);
     throw error; // ✅ important
   }
 });
@@ -78,11 +78,11 @@ userSchema.methods.generateuserAuthToken = async function () {
     await this.save()
     return newtoken;
   } catch (error) {
-    throw error;
+    res.status(400).json({ error: error })
   }
 }
 
 // user model
 const userDB = new mongoose.model("users", userSchema);
 
-module.exports = userDB
+module.exports = userDB;

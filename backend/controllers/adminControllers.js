@@ -1,56 +1,131 @@
-const adminDB = require("./../models/adminModel");
+const cloudinary = require("../Cloudinary/cloudinary");
+const adminDB = require("../models/adminModel");
 const bcrypt = require("bcryptjs");
-const cloudinary = require("./../Cloudinary/cloudinary");
+const jwt = require("jsonwebtoken");
+const SECRET_KEY = process.env.ADMIN_SECRET_KEY;
+
 
 const registerAdminController = async (req, res) => {
   try {
-    console.log("Admin Register API called");
+    // console.log("admin registered api hitted")
+    const { firstname, lastname, email, password, confirmpassword } = req.body;
 
-    const { name, email, password, mobile, confirmpassword } = req.body;
-
-    if (!name || !email || !password || !mobile || !confirmpassword || !req.file) {
+    // VALIDATION
+    if (!firstname || !lastname || !email || !password || !confirmpassword || !req.file) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    if (password !== confirmpassword) {
-      return res.status(400).json({ error: "Passwords do not match" });
-    }
-
-    const preAdmin = await adminDB.findOne({ email });
-    const mobileVerify = await adminDB.findOne({ mobile });
-
-    if (preAdmin) {
+    // CHECK EXISTING ADMIN
+    const preadmin = await adminDB.findOne({ email });
+    if (preadmin) {
       return res.status(400).json({ error: "Admin already exists" });
     }
 
-    if (mobileVerify) {
-      return res.status(400).json({ error: "Mobile already exists" });
+    // PASSWORD MATCH CHECK
+    if (password !== confirmpassword) {
+      return res.status(400).json({ error: "Password and Confirm Password do not match" });
     }
 
+    // CLOUDINARY UPLOAD
     const file = req.file.path;
-    const upload = await cloudinary.uploader.upload(file);
+    const uploadedImage = await cloudinary.uploader.upload(file);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // CREATE ADMIN
+    const adminData = new adminDB({ firstname, lastname, email, password, adminprofile: uploadedImage.secure_url });
 
-    const adminData = new adminDB({
-      name,
-      email,
-      password: hashedPassword,
-      mobile,
-      profile: upload.secure_url
-    });
+    // console.log("admin uploaded url is", uploadedImage.secure_url);
 
+    // SAVE ADMIN
     const savedAdmin = await adminData.save();
 
-    res.status(201).json({
-      message: "Admin registered successfully",
-      admin: savedAdmin
-    });
+    res.send("Admin registered successfully");
 
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Server error" });
+    // console.log("Register Admin Error:", error);
+    res.status(500).json({ error: error.message });
   }
 };
 
-module.exports = {registerAdminController}
+
+const loginAdminController = async (req, res) => {
+  // console.log("admin login api hitted");
+
+  const { email, password } = req.body;
+  // console.log("req body is", req.body);
+
+  // VALIDATION
+  if (!email || !password) {
+    return res.status(400).json({ error: "All fields required" });
+  }
+
+  try {
+    // FIND ADMIN
+    const adminValid = await adminDB.findOne({ email });
+
+    if (!adminValid) {
+      return res.status(400).json({ error: "Invalid Details" });
+    }
+
+    // PASSWORD MATCH
+    const isMatch = await bcrypt.compare(password, adminValid.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid Details" });
+    }
+
+    // REMOVE EXPIRED TOKENS
+    adminValid.tokens = adminValid.tokens.filter((t) => {
+      try {
+        jwt.verify(t.token, SECRET_KEY);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+
+    // GENERATE NEW TOKEN
+    const token = await adminValid.generateadminAuthToken();
+
+    // LIMIT MAX 3 TOKENS
+    if (adminValid.tokens.length > 3) {
+      adminValid.tokens = adminValid.tokens.slice(-3);
+    }
+    await adminValid.save();
+
+
+    // console.log("admin valid and token is", { adminValid, token });
+
+    // RESPONSE
+    res.status(200).json({ adminValid, token });
+  } catch (error) {
+    // console.log(error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+const adminverifyController = async (req, res) => {
+  try {
+    res.status(200).json({ valid: true, admin: req.rootAdmin });
+  } catch (error) {
+    res.status(401).json({ valid: false });
+  }
+};
+
+
+const logoutController = async (req, res) => {
+  try {
+    const admin = req.rootAdmin;
+    const token = req.token;
+    // REMOVE CURRENT TOKEN
+    admin.tokens = admin.tokens.filter((t) => t.token !== token);
+
+    await admin.save();
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    // console.log("Logout Error:", error);
+    res.status(500).json({ error: "Logout failed" });
+  }
+};
+
+
+module.exports = { registerAdminController, loginAdminController, adminverifyController, logoutController };

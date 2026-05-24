@@ -5,8 +5,8 @@ const jwt = require("jsonwebtoken");
 const SECRET_KEY = process.env.USER_SECRET_KEY || "USER SECRET KEY"
 
 const registerUserController = async (req, res) => {
-  console.log('user route called\n register api called')
-  console.log('request body is', req.body)
+  // console.log('user route called\n register api called')
+  // console.log('request body is', req.body)
   // console.log('request file is', req.file)
   // res.send('user registered successfully');
 
@@ -20,14 +20,14 @@ const registerUserController = async (req, res) => {
   const file = req.file?.path;
   const upload = await cloudinary.uploader.upload(file);
 
-  console.log('file path is', file)
-  console.log("upload url is", upload.url)
+  // console.log('file path is', file)
+  // console.log("upload url is", upload.url)
   // res.send('user registered successfully');
 
 
   try {
     const preuser = await userDB.findOne({ email: email });
-    console.log('preuser is', preuser)
+    // console.log('preuser is', preuser)
 
     if (preuser) {
       return res.status(400).json({ error: "this user is already exist" });
@@ -38,11 +38,11 @@ const registerUserController = async (req, res) => {
         firstname, lastname, email, password, userprofile: upload.secure_url
       });
 
-      console.log("userdata is", userData)
+      // console.log("userdata is", userData)
 
       // here password hashing
       let data = await userData.save();
-      console.log("data is", data)
+      // console.log("data is", data)
 
       // res.status(200).json(userData);
       // res.status(200).json(data);
@@ -59,6 +59,7 @@ const registerUserController = async (req, res) => {
 
 const loginUserController = async (req, res) => {
   const { email, password } = req.body;
+  // console.log("req body is", req.body)
 
   if (!email || !password) {
     return res.status(400).json({ error: "All fields required" });
@@ -94,26 +95,18 @@ const loginUserController = async (req, res) => {
     if (userValid.tokens.length > 3) {
       userValid.tokens = userValid.tokens.slice(-3); // last 3 tokens
     }
-
     await userValid.save();
 
-    res.status(200).json({
-      userValid,
-      token,
-    });
-
+    res.status(200).json({ userValid, token, });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({ error: "Server Error" });
   }
 };
 
 const userverifyController = async (req, res) => {
   try {
-    res.status(200).json({
-      valid: true,
-      user: req.rootUser
-    });
+    res.status(200).json({ valid: true, user: req.rootUser });
   } catch (error) {
     res.status(401).json({ valid: false });
   }
@@ -131,7 +124,6 @@ const logoutController = async (req, res) => {
     res.status(500).json({ error: "Logout failed" });
   }
 };
-
 
 const logoutAllController = async (req, res) => {
   try {

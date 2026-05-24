@@ -11,8 +11,8 @@ router.post("/register", userUpload.single("userprofile"), registerUserControlle
 router.post("/login", loginUserController);
 
 router.get("/userverify", userMiddleware, userverifyController);
-router.post("/logout", userMiddleware, logoutController);
-router.post("/logoutAll", userMiddleware, logoutAllController);
+router.get("/logout", userMiddleware, logoutController);
+router.get("/logoutAll", userMiddleware, logoutAllController);
 
 
 module.exports = router

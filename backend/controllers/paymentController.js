@@ -21,16 +21,34 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// ADD THIS BELOW
+transporter.verify((error, success) => {
+  if (error) {
+    console.log("TRANSPORT ERROR =>", error);
+  } else {
+    console.log("Mail server ready");
+  }
+});
+
 // ================= CREATE ORDER =================
 exports.createOrder = async (req, res) => {
   try {
+    let { amount } = req.body;
 
-    const { amount } = req.body;
+    // convert safely
+    amount = Number(amount);
+
+    if (!amount || isNaN(amount)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid amount",
+      });
+    }
 
     const options = {
-      amount: amount * 100,
+      amount: Math.round(amount * 100),
       currency: "INR",
-      receipt: "receipt_order",
+      receipt: `receipt_${Date.now()}`,
     };
 
     const order = await razorpay.orders.create(options);
@@ -38,14 +56,12 @@ exports.createOrder = async (req, res) => {
     return res.status(200).json(order);
 
   } catch (error) {
-
     console.log(error);
 
     return res.status(500).json({
       success: false,
       message: "Order creation failed",
     });
-
   }
 };
 
@@ -117,6 +133,8 @@ exports.sendOrderMail = async (req, res) => {
       totalPrice,
     });
 
+    console.log(user);
+    console.log(user.email);
     const sentMail = await transporter.sendMail({
       from: process.env.EMAIL,
       to: user.email,

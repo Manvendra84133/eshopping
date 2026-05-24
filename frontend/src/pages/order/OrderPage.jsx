@@ -117,7 +117,7 @@ const OrderPage = () => {
       // RAZORPAY OPTIONS
       // =========================
       const options = {
-        key: "rzp_test_Sq1bluWLjCYv1T",
+        key: "rzp_test_StC61zg7qzX7e1",
         amount: order.amount,
         currency: order.currency,
         name: "Ecommerce Store",

@@ -23,18 +23,14 @@ app.use(express.static("public"));
 
 
 // Nodemailer Transporter
-const dns = require("dns");
-
-dns.setDefaultResultOrder("ipv4first");
-
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL,
-    pass: process.env.PASSWORD,
-  },
+    pass: process.env.PASSWORD
+  }
 });
 
 
@@ -54,10 +50,6 @@ app.use("/api/admin", adminRoutes);
 // admin route
 const paymentRoutes = require("./routes/paymentRoutes");
 app.use("/api/payment", paymentRoutes);
-
-// order route
-const orderRoutes = require("./routes/orderRoutes");
-app.use("/api/orders", orderRoutes);
 
 // // order route
 // const orderRoutes = require("./routes/orderRoutes");

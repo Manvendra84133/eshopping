@@ -42,7 +42,7 @@ const AddProduct = () => {
       formData.append("price", product.price);
       formData.append("description", product.description);
       formData.append("category", product.category);
-      formData.append("productimage", product.image);
+      formData.append("image", product.image);
       formData.append("rate", product.rate);
       formData.append("count", product.count);
 

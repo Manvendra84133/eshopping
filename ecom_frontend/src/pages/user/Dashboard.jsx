@@ -16,7 +16,7 @@ function Dashboard() {
     setUser(storedUser);
   }, []);
 
-  // fetch products (ALWAYS from backend, no cache)
+  // fetch products
   useEffect(() => {
     axios
       .get(`${BASE_URL}/api/products/getallproducts`)
@@ -26,7 +26,7 @@ function Dashboard() {
       .catch((err) => console.log(err));
   }, []);
 
-  // product click
+  // product click (NOW USING id variable clearly)
   const handleProductClick = (id) => {
     navigate(`/product/${id}`);
   };
@@ -55,29 +55,35 @@ function Dashboard() {
 
       {/* PRODUCTS */}
       <div className="row mt-4">
-        {products.map((product) => (
-          <div className="col-md-3 mb-3" key={product._id}>
-            <div
-              className="card mb-4 shadow"
-              onClick={() => handleProductClick(product._id)}
-              style={{ cursor: "pointer" }}
-            >
-              <img
-                src={product.image}
-                className="card-img-top"
-                height="200"
-                alt={product.title}
-              />
-              <div className="card-body">
-                <h6>{product.title?.slice(0, 40)}</h6>
-                <h5>${product.price}</h5>
-                <p className="card-text text-muted">
-                  {product.description?.slice(0, 80)}...
-                </p>
+        {products.map((product) => {
+
+          // 🔥 IMPORTANT: normalize ID here
+          const id = product._id || product.id;
+
+          return (
+            <div className="col-md-3 mb-3" key={id}>
+              <div
+                className="card mb-4 shadow"
+                onClick={() => handleProductClick(id)}
+                style={{ cursor: "pointer" }}
+              >
+                <img
+                  src={product.image}
+                  className="card-img-top"
+                  height="200"
+                  alt={product.title}
+                />
+                <div className="card-body">
+                  <h6>{product.title?.slice(0, 40)}</h6>
+                  <h5>${product.price}</h5>
+                  <p className="card-text text-muted">
+                    {product.description?.slice(0, 80)}...
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

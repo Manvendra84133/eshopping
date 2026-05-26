@@ -16,22 +16,39 @@ const getAllProductsController = async (req, res) => {
 };
 
 
-const getSingleProductController = async (req, res) => {
-  // console.log("single product request received from user");
+const mongoose = require("mongoose");
 
+const getSingleProductController = async (req, res) => {
   try {
     const { id } = req.params;
-    const product = await productDB.findOne({ id: id });
+
+    // 🔴 STEP 1: VALIDATE ID FIRST (VERY IMPORTANT)
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product id format",
+      });
+    }
+
+    // 🔴 STEP 2: SAFE QUERY
+    const product = await productDB.findById(id);
 
     if (!product) {
-      return res.status(404).json({ error: "Product not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
     }
 
     res.status(200).json(product);
 
   } catch (error) {
-    // console.log(error);
-    res.status(500).json({ error: "Failed to fetch product" });
+    console.log("🔥 SINGLE PRODUCT ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 

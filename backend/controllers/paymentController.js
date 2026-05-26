@@ -124,6 +124,13 @@ exports.sendOrderMail = async (req, res) => {
       totalPrice,
     } = req.body;
 
+    if (!user || !user.email) {
+  return res.status(400).json({
+    success: false,
+    message: "User email missing"
+  });
+}
+
     const templatePath = path.join(
       __dirname,
       "../views/ordertemplate.ejs"

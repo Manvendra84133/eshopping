@@ -41,8 +41,8 @@ const getSingleProductController = async (req, res) => {
 const addProductController = async (req, res) => {
   try {
     // console.log('product controller called\n add product api called')
-    // console.log('request body is', req.body)
-    // console.log('request file is', req.file)
+    console.log('request body is', req.body)
+    console.log('request file is', req.file)
     // res.send('product inserted successfully');
 
     const { id, title, price, description, category, rate, count } = req.body;
